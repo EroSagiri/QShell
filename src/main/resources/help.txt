@@ -1,0 +1,5 @@
+QShell 代理执行Shell命令
+/qs add [qq] 添加qq号到信任列表
+/qs remove [qq] 从信任列表移除qq号
+/qs list 列出信任列表
+/qs clear 清楚信任列表

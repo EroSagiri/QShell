@@ -1,5 +1,6 @@
 package org.example.mirai.plugin
 
+import me.sagiri.mirai.plugin.QShell.Main
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
@@ -9,10 +10,10 @@ import net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader
 suspend fun main() {
     MiraiConsoleTerminalLoader.startAsDaemon()
 
-    PluginMain.load()
-    PluginMain.enable()
+    Main.load()
+    Main.enable()
 
-    val bot = MiraiConsole.addBot(123456, "") {
+    val bot = MiraiConsole.addBot(2023381589, "loveSagiri233") {
         fileBasedDeviceInfo()
     }.alsoLogin()
 
