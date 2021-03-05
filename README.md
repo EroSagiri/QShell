@@ -20,10 +20,7 @@ shell解析器
 
 ### 运行bash的配置  
 ```
-# 主人qq号
 master: 2476255563
-# 命令列表($cmd 回被替换成要执行的命令)
-
 shellList: 
   - name: shell
     commandRegex: '^\$(.+)'
