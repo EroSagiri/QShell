@@ -3,20 +3,23 @@ package me.sagiri.mirai.plugin.QShell
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import java.util.function.UnaryOperator
 
 class Shell {
     private lateinit var pb : ProcessBuilder
-    var shell = "bash"
-    var shell_arvs = "-c"
+    lateinit var commandList : MutableList<String>
 
     init {
         pb = ProcessBuilder()
-        pb.directory(File(System.getenv("HOME")))
+//        pb.directory(File(System.getenv("HOME")))
+    }
+
+    constructor(commandList: MutableList<String>) {
+        this.commandList = commandList
     }
 
     fun exec(cmd : String): String? {
-        val shell_cmd = listOf(shell, shell_arvs, cmd)
-        pb.command(shell_cmd)
+        pb.command(cmd)
         val ps = pb.start()
         val stdlog = BufferedReader(InputStreamReader(ps.inputStream)).readText()
         val stderr = BufferedReader(InputStreamReader(ps.errorStream)).readText()
@@ -30,12 +33,18 @@ class Shell {
         }
     }
 
-    fun start() : Boolean {
+    fun exec(commandList : MutableList<String>): String? {
+        pb.command(commandList)
+        val ps = pb.start()
+        val stdlog = BufferedReader(InputStreamReader(ps.inputStream)).readText()
+        val stderr = BufferedReader(InputStreamReader(ps.errorStream)).readText()
 
-        return true
-    }
-
-    public  fun  stop() : Boolean {
-        return  true
+        if (stdlog != "" ) {
+            return stdlog
+        } else if( stderr != "") {
+            return stderr
+        } else {
+            return null
+        }
     }
 }

@@ -1,14 +1,16 @@
 package me.sagiri.mirai.plugin.QShell
 
-import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.console.permission.AbstractPermitteeId
+import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.info
 import java.util.regex.Pattern
 
@@ -27,65 +29,78 @@ object Main : KotlinPlugin(
     }
 ) {
     lateinit var shell : Shell
-    private var qsconfig  = QSConfig
+    lateinit var messageEventListener : CompletableJob
 
     @OptIn(ConsoleExperimentalApi::class, ExperimentalCommandDescriptors::class)
     override fun onEnable() {
         logger.info { "Plugin loaded" }
-        shell = Shell()
         //加载配置
         QSConfig.reload()
+        shell = Shell(QSConfig.commandList)
         // 注册命令
         CommandManager.registerCommand(QSCommand)
 
+        AbstractPermitteeId.AnyContact.permit(QSCommand.permission)
+
         // 注册事件
-        globalEventChannel().subscribeAlways(
-            MessageEvent::class,
-            CoroutineExceptionHandler { _, throwable ->
-                logger.info(throwable)
-            },
-            priority = EventPriority.MONITOR
-            ) call@{
-        }
-
-        globalEventChannel().subscribeAlways(
-            FriendMessageEvent::class
-        ) {
-            val p = Pattern.compile(qsconfig.cmdRegex).matcher(message.content)
-            if(p.find()) {
-                if(isPer(sender.id)) {
-                    val cmd = p.group(1)
-                    shell.exec(cmd)?.let { it1 -> subject.sendMessage(it1) }
-                } else {
-                    subject.sendMessage("没有权限")
+        messageEventListener = globalEventChannel().subscribeAlways<MessageEvent> { event ->
+            QSConfig.shellList.forEach { commandConfig ->
+                if(commandConfig.isEnabled) {
+                    val pattern = Pattern.compile(commandConfig.commandRegex, Pattern.DOTALL).matcher(message.content)
+                    if (pattern.find()) {
+                        if (0L in commandConfig.trustList || event.sender.id == QSConfig.master || event.sender.id in commandConfig.trustList) {
+                            val groupCount = pattern.groupCount()
+                            val tempCommandConfig = commandConfig.commandList.toMutableList()
+                            for(index in tempCommandConfig.indices) {
+                                // 替换变量 $<数字> 为对应的分组
+                                val varPattern = Pattern.compile("\\\$(\\d)", Pattern.DOTALL).matcher(tempCommandConfig[index])
+                                if(varPattern.find()) {
+                                    val groupIndex = varPattern.group(1).toInt()
+                                    if(groupIndex <= groupCount || groupIndex > 0) {
+                                        tempCommandConfig[index] = tempCommandConfig[index].replace("\$${groupIndex}", pattern.group(groupIndex))
+                                    }
+                                }
+                            }
+                            GlobalScope.launch {
+                                val result = withTimeout(600000L) {
+                                    shell.exec(tempCommandConfig)?.let { event.subject.sendMessage(it) }
+                                }
+                            }
+                        } else {
+                            event.subject.sendMessage(commandConfig.notPresentMessage)
+                        }
+                    }
                 }
             }
-        }
 
-        globalEventChannel().subscribeAlways(
-            GroupMessageEvent::class
-        ) {
 
-            val p = Pattern.compile(qsconfig.cmdRegex).matcher(message.content)
-            if(p.find()) {
-                if(isPer(sender.id)) {
-                    val cmd = p.group(1)
-                    shell.exec(cmd)?.let { it1 -> subject.sendMessage(it1) }
-                } else {
-                    subject.sendMessage("没有权限")
-                }
-            }
+
+//            val pattern = Pattern.compile(QSConfig.cmdRegex, Pattern.DOTALL).matcher(message.content)
+//            if(pattern.find()) {
+//                if(isPer(event.sender.id)) {
+//                    val cmd = pattern.group(1)
+//                    GlobalScope.launch{
+//                        try {
+//                            withTimeout(10000L) {
+//                                shell.exec(cmd)?.let { it ->
+//                                    event.subject.sendMessage(it)
+//                                }
+//                            }
+//                        } catch (e : TimeoutCancellationException) {
+//                            event.subject.sendMessage(PlainText("超时").plus(Image("/home/sagiri/Pictures/1613908258257.jpg")))
+//                        }
+//                    }
+//                } else {
+//                    subject.sendMessage("没有权限")
+//                }
+//            }
         }
     }
+
+    /**
+     * 关闭插件
+     */
     override fun onDisable() {
-
-    }
-
-    private fun isPer(qq : Long) : Boolean {
-        return if(qsconfig.trusts.size >= 1 && qsconfig.trusts[0].toInt() == 0) {
-            true
-        } else {
-            qsconfig.master == qq || qq in qsconfig.trusts
-        }
+        messageEventListener.complete()
     }
 }
