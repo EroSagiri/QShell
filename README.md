@@ -1,5 +1,7 @@
 # mirai-QShell
 在qq代理执行系统Shell命令
+每次执行一条命令都会启动一个进程（不会保留变量环境  
+不能执行堵塞的命令  
 
 ## 如何使用
 从Releases下载jar文件放到mirai-console的plugins  
