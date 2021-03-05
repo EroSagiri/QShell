@@ -32,17 +32,61 @@ object QSCommand : CompositeCommand(
     }
 
     @SubCommand("list")
-    @Description("获取Shell列表")
+    @Description("获取shell列表")
     suspend fun CommandSender.list() {
         var msg = ""
+        var command = ""
         for(index in QSConfig.shellList.indices) {
             val commandConfig = QSConfig.shellList[index]
-            msg += "${commandConfig.name} ${commandConfig.description} ${commandConfig.commandRegex} ${ if(commandConfig.isEnabled) "开启" else "关闭"} 信任 ${commandConfig.trustList.toString()}"
+            for(index in commandConfig.commandList.indices) {
+                command += commandConfig.commandList[index]
+                if(index != commandConfig.commandList.size -1) {
+                    command += " "
+                }
+            }
+            var sp = ""
+            var spNum = 8 - commandConfig.name.length
+            if(spNum > 0) {
+                for(i in 1 .. spNum) {
+                    sp += " "
+                }
+            }
+            msg += "${commandConfig.name} $sp${ if(commandConfig.isEnabled) "开" else "关"} ${commandConfig.commandRegex}"
             if(index != QSConfig.shellList.size-1) {
                 msg += "\n"
             }
         }
         sendMessage(msg)
+    }
+
+    @SubCommand("info")
+    @Description("获取Shell的详细配置")
+    suspend fun CommandSender.info(shellName: String) {
+        var hasShell = false
+        QSConfig.shellList.forEach { commandConfig ->
+            if(commandConfig.name == shellName) {
+                hasShell = true
+                var command = ""
+                var trust = ""
+                for(index in commandConfig.commandList.indices) {
+                    command += commandConfig.commandList[index]
+                    if(index != commandConfig.commandList.size -1) {
+                        command += " "
+                    }
+                }
+                for(index in commandConfig.trustList.indices) {
+                    trust += "  ${commandConfig.trustList[index]}"
+                    if(index != commandConfig.trustList.size -1) {
+                        trust += "\n"
+                    }
+                }
+                sendMessage("名字: ${commandConfig.name}\n状态: ${if (commandConfig.isEnabled) "开启" else "关闭"}\n说明: ${commandConfig.description}\n正则表达式: ${commandConfig.commandRegex}\n执行命令: $command\n信任: $trust\n没有权限时的返回消息\n  ${commandConfig.notPresentMessage}")
+            }
+        }
+
+        if(!hasShell) {
+            sendMessage("没有找到 Shell: ${shellName}")
+        }
     }
 
     @SubCommand("echo")
@@ -57,6 +101,7 @@ object QSCommand : CompositeCommand(
         var isAdd = false
         QSConfig.shellList.forEach { commandConfig ->
             if(commandConfig.name == shellName) {
+                isAdd = true
                 if(qq !in commandConfig.trustList) {
                     commandConfig.trustList.add(qq)
                     sendMessage("已经添加${qq}到${shellName}的信任列表")
@@ -79,6 +124,7 @@ object QSCommand : CompositeCommand(
         var isAdd = false
         QSConfig.shellList.forEach { commandConfig ->
             if(commandConfig.name == shellName) {
+                isAdd = true
                 if(qq in commandConfig.trustList) {
                     commandConfig.trustList.remove(qq)
                     sendMessage("已把${qq}从${shellName}信任列表移除")
@@ -96,12 +142,13 @@ object QSCommand : CompositeCommand(
     }
 
     @SubCommand("denyAll")
-    @Description("清楚所有")
+    @Description("清楚指定的shell所有信任列表")
     suspend fun CommandSender.clear(shellName: String) {
         var isAdd = false
         QSConfig.shellList.forEach { commandConfig ->
             if(commandConfig.name == shellName) {
-
+                isAdd = true
+                commandConfig.trustList.clear()
             }
         }
 
@@ -116,6 +163,7 @@ object QSCommand : CompositeCommand(
         var isAdd = false
         QSConfig.shellList.forEach { commandConfig ->
             if(commandConfig.name == shellName) {
+                isAdd = true
                 if(commandConfig.isEnabled) {
                     sendMessage("${shellName}启用状态  ${commandConfig.description}")
                 } else {
@@ -136,6 +184,7 @@ object QSCommand : CompositeCommand(
         var isAdd = false
         QSConfig.shellList.forEach { commandConfig ->
             if(commandConfig.name == shellName) {
+                isAdd = true
                 if(!commandConfig.isEnabled) {
                     sendMessage("${shellName}关闭状态  ${commandConfig.description}")
                 } else {
@@ -160,7 +209,7 @@ object QSCommand : CompositeCommand(
         }
 
         if(is_in) {
-            sendMessage("${shellName} 已存在")
+            sendMessage("$shellName 已存在")
         } else {
             QSConfig.shellList.add(
                 CommandConfig(
@@ -181,18 +230,26 @@ object QSCommand : CompositeCommand(
         var isAdd = false
         QSConfig.shellList.forEach { commandConfig ->
             if(commandConfig.name == shellName) {
+                isAdd = true
                 when(type) {
-                    "name" -> {
+                    "name", "名字" -> {
                         commandConfig.name = v
+                        sendMessage("设置成功")
                     }
-                    "description" -> {
+                    "description", "描述" -> {
                         commandConfig.description = v
+                        sendMessage("设置成功")
                     }
-                    "commandRegex" -> {
+                    "commandRegex", "正则" -> {
                         commandConfig.commandRegex = v
+                        sendMessage("设置成功")
                     }
-                    "notPresentMessage" -> {
+                    "notPresentMessage", "提示" -> {
                         commandConfig.notPresentMessage = v
+                        sendMessage("设置成功")
+                    }
+                    else -> {
+                        sendMessage("错误的选项\nname 名字\ndescription 描述\ncommandRegex 正则\nnotPresentMessage 提示")
                     }
                 }
             }
@@ -211,23 +268,23 @@ object QSCommand : CompositeCommand(
             if(commandConfig.name == shellName) {
                 isAdd = true
                 when(type) {
-                    "show" -> {
+                    "show", "查看" -> {
                         println(commandConfig.commandList.toString())
                     }
-                    "add" -> {
+                    "add", "添加" -> {
                         commandConfig.commandList.add(v)
                     }
-                    "remove" -> {
+                    "remove", "移除" -> {
                         commandConfig.commandList.remove(commandConfig)
                     }
-                    "clear" -> {
+                    "clear", "清空" -> {
                         commandConfig.commandList.clear()
                     }
-                    "last" -> {
+                    "last", "最后" -> {
                         commandConfig.commandList.removeLast()
                     }
                     else -> {
-                        println("add 添加\nremove移除指定值\nclear清除所有\n删除最后一个")
+                        sendMessage("add 添加\nremove移除指定值\nclear清除所有\n删除最后一个")
                     }
                 }
             }

@@ -1,21 +1,14 @@
 package me.sagiri.mirai.plugin.QShell
 
 import java.io.BufferedReader
-import java.io.File
 import java.io.InputStreamReader
-import java.util.function.UnaryOperator
 
 class Shell {
     private lateinit var pb : ProcessBuilder
-    lateinit var commandList : MutableList<String>
 
     init {
         pb = ProcessBuilder()
 //        pb.directory(File(System.getenv("HOME")))
-    }
-
-    constructor(commandList: MutableList<String>) {
-        this.commandList = commandList
     }
 
     fun exec(cmd : String): String? {

@@ -5,6 +5,7 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.permission.AbstractPermitteeId
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
+import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.disable
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
@@ -36,7 +37,7 @@ object Main : KotlinPlugin(
         logger.info { "Plugin loaded" }
         //加载配置
         QSConfig.reload()
-        shell = Shell(QSConfig.commandList)
+        shell = Shell()
         // 注册命令
         CommandManager.registerCommand(QSCommand)
 
@@ -72,28 +73,6 @@ object Main : KotlinPlugin(
                     }
                 }
             }
-
-
-
-//            val pattern = Pattern.compile(QSConfig.cmdRegex, Pattern.DOTALL).matcher(message.content)
-//            if(pattern.find()) {
-//                if(isPer(event.sender.id)) {
-//                    val cmd = pattern.group(1)
-//                    GlobalScope.launch{
-//                        try {
-//                            withTimeout(10000L) {
-//                                shell.exec(cmd)?.let { it ->
-//                                    event.subject.sendMessage(it)
-//                                }
-//                            }
-//                        } catch (e : TimeoutCancellationException) {
-//                            event.subject.sendMessage(PlainText("超时").plus(Image("/home/sagiri/Pictures/1613908258257.jpg")))
-//                        }
-//                    }
-//                } else {
-//                    subject.sendMessage("没有权限")
-//                }
-//            }
         }
     }
 
