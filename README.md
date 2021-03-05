@@ -8,15 +8,15 @@
 
 ## 配置文件
 master 主人的qq,主人有执行所有命令的权限  
-shellList 是一个列表，代表着一个shell解析器  
+shellList 是一个列表，每一条代表着一个shell解析器  
 shell解析器  
-  name shell解析器的名字
-  commandRegex 匹配命令的正则表达式
+  name shell解析器的名字  
+  commandRegex 匹配命令的正则表达式  
   commandList 这是一个运行命令的列表，第一个要是可执行的程序，后面的是传递参数，$x会被替换成匹配到的分组 
-  trustList 能执行这个shell的用户，当这个列表里存在用户0时，所有人都有权限执行
-  isEnabled true时该shell是启用的,false时该shell是关闭的
-  description 这个shell的描述
-  notPresentMessage 匹配到命令但是没有权限时返回的消息
+  trustList 能执行这个shell的用户，当这个列表里存在用户0时，所有人都有权限执行  
+  isEnabled true时该shell是启用的,false时该shell是关闭的  
+  description 这个shell的描述  
+  notPresentMessage 匹配到命令但是没有权限时返回的消息  
 
 ### 运行bash的配置  
 ```
