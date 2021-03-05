@@ -7,11 +7,12 @@ plugins {
 }
 
 group = "me.sagiri.mirai.plugin.QShell"
-version = "0.1.0"
+version = "0.1.1"
 
 repositories {
     mavenLocal()
     maven("https://maven.aliyun.com/repository/public") // 阿里云国内代理仓库
     mavenCentral()
     jcenter()
+//    maven { url = uri("https://dl.bintray.com/karlatemp/misc") }
 }
