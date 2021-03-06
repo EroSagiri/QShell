@@ -41,7 +41,7 @@ object Main : KotlinPlugin(
         // 注册命令
         CommandManager.registerCommand(QSCommand)
 
-        AbstractPermitteeId.AnyContact.permit(QSCommand.permission)
+        AbstractPermitteeId.parseFromString("u${QSConfig.master}").permit(QSCommand.permission)
 
         // 注册事件
         messageEventListener = globalEventChannel().subscribeAlways<MessageEvent> { event ->
