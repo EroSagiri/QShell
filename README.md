@@ -42,9 +42,9 @@ shellList:
       - '$1'
 ```
 
-###在容器中运行bash
+### 在容器中运行bash
 确保当前有权限执行docker命令  
-运行一个容器,守护进程方式，并且执行bash,不如ta退出
+运行一个容器,守护进程方式，并且执行bash,不让ta退出  
 docker container run -d -it --rm --name=bash archlinux /bin/bash  
 不要用bash去执行docker（很容易被提权,直接使用docker  
 ```
