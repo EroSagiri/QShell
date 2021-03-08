@@ -15,6 +15,8 @@ object QSConfig: AutoSavePluginConfig("QSconfig") {
             CommandConfig(
                 "shell",
                 "^\\\$(.+)",
+                mutableListOf<Long>(0),
+                mutableListOf<Long>(0),
                 mutableListOf(
                     "bash",
                     "-c",

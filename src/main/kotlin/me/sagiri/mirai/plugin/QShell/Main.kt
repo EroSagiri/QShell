@@ -9,10 +9,15 @@ import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.disable
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.info
+import okhttp3.MediaType.Companion.toMediaType
 import java.util.regex.Pattern
 
 object Main : KotlinPlugin(
@@ -45,10 +50,29 @@ object Main : KotlinPlugin(
 
         // 注册事件
         messageEventListener = globalEventChannel().subscribeAlways<MessageEvent> { event ->
-            QSConfig.shellList.forEach { commandConfig ->
-                if(commandConfig.isEnabled) {
+            QSConfig.shellList.forEach list@{ commandConfig ->
                     val pattern = Pattern.compile(commandConfig.commandRegex, Pattern.DOTALL).matcher(message.content)
                     if (pattern.find()) {
+                        if(commandConfig.isEnabled) {
+                            if(event.subject is Group) {
+                                if(0L !in commandConfig.group && event.subject.id !in commandConfig.group && event.sender.id != QSConfig.master) {
+                                    logger.info("群: ${(event.subject as Group).name} ${event.subject.id} 成员 ${event.sender.nick} ${event.sender.id} 尝试执行 ${event.message.content} 不适用")
+                                    return@list
+                                }
+                            }
+
+                            if(event.subject is Friend) {
+                                if(0L !in commandConfig.friend && event.subject.id !in commandConfig.friend && event.sender.id != QSConfig.master) {
+                                    logger.info("好友 ${(event.subject as Friend).nick} 尝试执行 ${event.message.content} 不适用")
+                                    return@list
+                                }
+                            }
+
+                            if(event.subject is Member || event.subject is Stranger) {
+                                event.subject.sendMessage("加我为好友")
+                                return@list
+                            }
+
                         if (0L in commandConfig.trustList || event.sender.id == QSConfig.master || event.sender.id in commandConfig.trustList) {
                             val groupCount = pattern.groupCount()
                             val tempCommandConfig = commandConfig.commandList.toMutableList()
