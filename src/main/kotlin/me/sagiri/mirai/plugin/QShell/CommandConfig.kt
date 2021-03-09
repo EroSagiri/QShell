@@ -12,4 +12,20 @@ import kotlinx.serialization.Serializable
  * @notPresentMessage 没有权限时的提示
  */
 @Serializable
-class CommandConfig(var name : String, var commandRegex : String,val group : MutableList<Long>, val friend : MutableList<Long>, val commandList: MutableList<String>, val trustList : MutableList<Long>, var isEnabled : Boolean, var description : String, var notPresentMessage : String)
+class CommandConfig(
+    var name : String,
+    var commandRegex : String,
+    val group : MutableList<Long>,
+    val friend : MutableList<Long>,
+    var replace : MutableList<Replace>,
+    val commandList: MutableList<String>,
+    val trustList : MutableList<Long>,
+    var isEnabled : Boolean,
+    var description : String,
+    var notPresentMessage : String,
+    var message : String,
+    var timeout : Long
+    )
+
+@Serializable
+class Replace(var old : String, var new : String)

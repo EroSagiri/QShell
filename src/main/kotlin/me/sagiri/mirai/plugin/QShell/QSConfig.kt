@@ -17,6 +17,8 @@ object QSConfig: AutoSavePluginConfig("QSconfig") {
                 "^\\\$(.+)",
                 mutableListOf<Long>(0),
                 mutableListOf<Long>(0),
+                mutableListOf<Replace>(
+                ),
                 mutableListOf(
                     "bash",
                     "-c",
@@ -27,7 +29,9 @@ object QSConfig: AutoSavePluginConfig("QSconfig") {
                 ),
                 true,
                 "执行Shell命令",
-                "没有执行Shell的权限"
+                "没有执行Shell的权限",
+                "\$msg",
+                0L
             )
         )
     )

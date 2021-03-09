@@ -219,9 +219,12 @@ object QSCommand : CompositeCommand(
                     mutableListOf(),
                     mutableListOf(),
                     mutableListOf(),
+                    mutableListOf(),
                     true,
                     "description",
-                    "没有执行${shellName}的权限"
+                    "没有执行${shellName}的权限",
+                    "\$msg",
+                    0L,
                 )
             )
         }

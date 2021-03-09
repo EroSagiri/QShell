@@ -16,8 +16,12 @@ import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.MessageSource.Key.quote
+import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.utils.info
 import okhttp3.MediaType.Companion.toMediaType
+import java.sql.Time
+import java.util.*
 import java.util.regex.Pattern
 
 object Main : KotlinPlugin(
@@ -34,7 +38,6 @@ object Main : KotlinPlugin(
 
     }
 ) {
-    lateinit var shell : Shell
     lateinit var messageEventListener : CompletableJob
 
     @OptIn(ConsoleExperimentalApi::class, ExperimentalCommandDescriptors::class)
@@ -42,7 +45,6 @@ object Main : KotlinPlugin(
         logger.info { "Plugin loaded" }
         //加载配置
         QSConfig.reload()
-        shell = Shell()
         // 注册命令
         CommandManager.registerCommand(QSCommand)
 
@@ -82,15 +84,38 @@ object Main : KotlinPlugin(
                                 if(varPattern.find()) {
                                     val groupIndex = varPattern.group(1).toInt()
                                     if(groupIndex <= groupCount || groupIndex > 0) {
-                                        tempCommandConfig[index] = tempCommandConfig[index].replace("\$${groupIndex}", pattern.group(groupIndex))
+                                        var groupContent = pattern.group(groupIndex)
+                                        commandConfig.replace.forEach { it ->
+                                            groupContent = groupContent.replace(it.old, it.new)
+                                        }
+                                        tempCommandConfig[index] = tempCommandConfig[index].replace("\$${groupIndex}", groupContent)
                                     }
                                 }
                             }
-                            GlobalScope.launch {
-                                val result = withTimeout(600000L) {
-                                    shell.exec(tempCommandConfig)?.let { event.subject.sendMessage(it) }
+
+                            val shell : Shell = Shell()
+                            val l = GlobalScope.launch {
+                                val msg = shell.exec(tempCommandConfig)
+                                if(msg != null) {
+                                    event.subject.sendMessage(commandConfig.message.replace("\$msg", msg).decapitalize())
                                 }
                             }
+                            if(commandConfig.timeout != 0L) {
+                                GlobalScope.launch {
+                                    delay(commandConfig.timeout)
+                                    if (l.isActive) {
+                                        shell.destroy()
+                                        event.subject.sendMessage(PlainText("超时被摧毁 Pid: ${shell.getPid()}").plus(event.message.quote()))
+                                    }
+                                }
+                            }
+//                            GlobalScope.launch {
+//                                delay(1000L)
+//                                if(l.isActive) {
+//                                    l.cancel()
+//                                    event.subject.sendMessage("超时")
+//                                }
+//                            }
                         } else {
                             event.subject.sendMessage(commandConfig.notPresentMessage)
                         }
