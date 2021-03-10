@@ -91,6 +91,10 @@ object Main : KotlinPlugin(
                                         tempCommandConfig[index] = tempCommandConfig[index].replace("\$${groupIndex}", groupContent)
                                     }
                                 }
+                                // 变量替换
+                                tempCommandConfig[index] = tempCommandConfig[index].replace("\$senderId", event.sender.id.toString())
+                                tempCommandConfig[index] = tempCommandConfig[index].replace("\$senderName", event.sender.nick)
+                                tempCommandConfig[index] = tempCommandConfig[index].replace("\$time", event.time.toString())
                             }
 
                             val shell : Shell = Shell()
