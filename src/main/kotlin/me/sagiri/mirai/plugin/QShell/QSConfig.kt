@@ -1,6 +1,5 @@
 package me.sagiri.mirai.plugin.QShell
 
-import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
@@ -10,14 +9,12 @@ object QSConfig: AutoSavePluginConfig("QSconfig") {
     var master by value<Long>(2476255563)
 
     @ValueDescription("shell列表")
-    val shellList : MutableList<CommandConfig> by value(
+    val shellList : MutableList<ShellConfig> by value(
         mutableListOf(
-            CommandConfig(
+            ShellConfig(
                 "shell",
                 "^\\\$(.+)",
-                mutableListOf<Long>(0),
-                mutableListOf<Long>(0),
-                mutableListOf<Replace>(
+                mutableListOf<MutableList<String>>(
                 ),
                 mutableListOf(
                     "bash",
@@ -25,7 +22,10 @@ object QSConfig: AutoSavePluginConfig("QSconfig") {
                     "$1"
                 ),
                 mutableListOf(
-//                    0L
+
+                ),
+                mutableListOf(
+
                 ),
                 true,
                 "执行Shell命令",

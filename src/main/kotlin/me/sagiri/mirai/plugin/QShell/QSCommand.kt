@@ -1,12 +1,7 @@
 package me.sagiri.mirai.plugin.QShell
 
-import io.ktor.client.request.forms.*
-import me.sagiri.mirai.plugin.QShell.QSCommand.add
-import me.sagiri.mirai.plugin.QShell.QSCommand.remove
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
-import net.mamoe.mirai.console.command.ConsoleCommandSender
-import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.plugin.jvm.reloadPluginConfig
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
@@ -68,6 +63,7 @@ object QSCommand : CompositeCommand(
                 hasShell = true
                 var command = ""
                 var trust = ""
+                var black = ""
                 for (index in commandConfig.commandList.indices) {
                     command += commandConfig.commandList[index]
                     if (index != commandConfig.commandList.size - 1) {
@@ -80,7 +76,13 @@ object QSCommand : CompositeCommand(
                         trust += "\n"
                     }
                 }
-                sendMessage("名字: ${commandConfig.name}\n状态: ${if (commandConfig.isEnabled) "开启" else "关闭"}\n说明: ${commandConfig.description}\n适用群: ${commandConfig.group}\n适用好友: ${commandConfig.friend}\n正则表达式: ${commandConfig.commandRegex}\n执行命令: $command\n信任: $trust\n没有权限时的返回消息\n  ${commandConfig.notPresentMessage}")
+                for (index in commandConfig.blackList.indices) {
+                    black += "  ${commandConfig.blackList[index]}"
+                    if (index != commandConfig.blackList.size - 1) {
+                        black += "\n"
+                    }
+                }
+                sendMessage("名字: ${commandConfig.name}\n状态: ${if (commandConfig.isEnabled) "开启" else "关闭"}\n说明: ${commandConfig.description}\n正则表达式: ${commandConfig.commandRegex}\n执行命令: $command\n信任: $trust\nblack: $black\n没有权限时的返回消息\n  ${commandConfig.notPresentMessage}")
             }
         }
 
@@ -97,17 +99,17 @@ object QSCommand : CompositeCommand(
 
     @SubCommand("trust")
     @Description("添加用户到信任列表")
-    suspend fun CommandSender.add(shellName: String, qq: Long) {
+    suspend fun CommandSender.add(shellName: String, role: String) {
         var isAdd = false
         QSConfig.shellList.forEach { commandConfig ->
             if (commandConfig.name == shellName) {
                 isAdd = true
-                if (qq !in commandConfig.trustList) {
-                    commandConfig.trustList.add(qq)
-                    sendMessage("已经添加${qq}到${shellName}的信任列表")
+                if (role !in commandConfig.trustList) {
+                    commandConfig.trustList.add(role)
+                    sendMessage("已经添加${role}到${shellName}的信任列表")
                     isAdd = true
                 } else {
-                    sendMessage("${qq} 在${shellName}里面了呢")
+                    sendMessage("${role} 在${shellName}里面了呢")
                     isAdd = true
                 }
             }
@@ -120,17 +122,17 @@ object QSCommand : CompositeCommand(
 
     @SubCommand("deny")
     @Description("从信任列表移除用户")
-    suspend fun CommandSender.deny(shellName: String, qq: Long) {
+    suspend fun CommandSender.deny(shellName: String, role: String) {
         var isAdd = false
         QSConfig.shellList.forEach { commandConfig ->
             if (commandConfig.name == shellName) {
                 isAdd = true
-                if (qq in commandConfig.trustList) {
-                    commandConfig.trustList.remove(qq)
-                    sendMessage("已把${qq}从${shellName}信任列表移除")
+                if (role in commandConfig.trustList) {
+                    commandConfig.trustList.remove(role)
+                    sendMessage("已把${role}从${shellName}信任列表移除")
                     isAdd = true
                 } else {
-                    sendMessage("${qq} 不在${shellName}信任列表里")
+                    sendMessage("${role} 不在${shellName}信任列表里")
                     isAdd = true
                 }
             }
@@ -141,6 +143,8 @@ object QSCommand : CompositeCommand(
         }
     }
 
+
+
     @SubCommand("denyAll")
     @Description("清楚指定的shell所有信任列表")
     suspend fun CommandSender.clear(shellName: String) {
@@ -149,6 +153,46 @@ object QSCommand : CompositeCommand(
             if (commandConfig.name == shellName) {
                 isAdd = true
                 commandConfig.trustList.clear()
+            }
+        }
+
+        if (!isAdd) {
+            sendMessage("没有找到 Shell: ${shellName}")
+        }
+    }
+
+    @SubCommand("black")
+    @Description("添加用户到信任列表")
+    suspend fun CommandSender.black(shellName: String, role: String) {
+        var isAdd = false
+        QSConfig.shellList.forEach { commandConfig ->
+            if (commandConfig.name == shellName) {
+                isAdd = true
+                if (role !in commandConfig.blackList) {
+                    commandConfig.blackList.add(role)
+                    sendMessage("已经添加${role}到${shellName}的black列表")
+                    isAdd = true
+                } else {
+                    sendMessage("${role} 在${shellName}里面了呢")
+                    isAdd = true
+                }
+            }
+        }
+
+        if (!isAdd) {
+            sendMessage("没有找到 Shell: ${shellName}")
+        }
+    }
+
+    @SubCommand("blackClear")
+    @Description("添加用户到信任列表")
+    suspend fun CommandSender.blackClear(shellName: String, role: String) {
+        var isAdd = false
+        QSConfig.shellList.forEach { commandConfig ->
+            if (commandConfig.name == shellName) {
+                isAdd = true
+                commandConfig.blackList.clear()
+                sendMessage("black列表已清楚")
             }
         }
 
@@ -212,10 +256,9 @@ object QSCommand : CompositeCommand(
             sendMessage("$shellName 已存在")
         } else {
             QSConfig.shellList.add(
-                CommandConfig(
+                ShellConfig(
                     shellName,
                     commandRegex,
-                    mutableListOf(),
                     mutableListOf(),
                     mutableListOf(),
                     mutableListOf(),
