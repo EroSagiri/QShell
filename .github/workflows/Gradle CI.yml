@@ -43,3 +43,19 @@ jobs:
         run: chmod +x ./gradlew
       - name: Build with Gradle
         run: ./gradlew build
+      
+      - name: Make mirai-console-plugin
+        run: ./gradlew buildPlugin
+        
+      - name: Copy Jar
+        working-directory: ${{ github.workspace }}
+        run : |
+          cp ${{ github.workspace }}/build/mirai/*.jar ${{ github.workspace }}/build/mirai/QShell.jar
+        shell: bash
+        
+      - name: ac
+        uses: actions/upload-artifact@v2
+        with:
+          name: Qshell.jar
+          path: ${{ github.workspace }}/build/mirai
+            
