@@ -43,3 +43,13 @@ jobs:
         run: chmod +x ./gradlew
       - name: Build with Gradle
         run: ./gradlew build
+      
+      - name: Make mirai-console-plugin
+        run: ./gradlew buildPlugin
+        
+      - name: artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Qshell
+          path: ${{ github.workspace }}/build/mirai
+            
