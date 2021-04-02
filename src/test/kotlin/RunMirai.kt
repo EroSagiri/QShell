@@ -13,7 +13,7 @@ suspend fun main() {
     Main.load()
     Main.enable()
 
-    val bot = MiraiConsole.addBot(2023381589, "loveSagiri233") {
+    val bot = MiraiConsole.addBot(3634848254, "loveIzumi233!") {
         fileBasedDeviceInfo()
     }.alsoLogin()
 

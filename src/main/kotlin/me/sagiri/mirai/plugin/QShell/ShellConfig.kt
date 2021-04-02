@@ -15,7 +15,7 @@ import kotlinx.serialization.Serializable
 class ShellConfig(
     var name : String,
     var commandRegex : String,
-    var replace : MutableList<MutableList<String>>,
+    var replace : MutableList<String>,
     val commandList: MutableList<String>,
     val trustList : MutableList<String>,
     val blackList : MutableList<String>,

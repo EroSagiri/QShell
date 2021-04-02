@@ -14,7 +14,7 @@ object QSConfig: AutoSavePluginConfig("QSconfig") {
             ShellConfig(
                 "shell",
                 "^\\\$(.+)",
-                mutableListOf<MutableList<String>>(
+                mutableListOf<String>(
                 ),
                 mutableListOf(
                     "bash",

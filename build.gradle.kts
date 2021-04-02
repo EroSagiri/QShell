@@ -11,8 +11,12 @@ version = "0.1.1"
 
 repositories {
     mavenLocal()
-    maven("https://maven.aliyun.com/repository/public") // 阿里云国内代理仓库
+//    maven("https://maven.aliyun.com/repository/public") // 阿里云国内代理仓库
     mavenCentral()
     jcenter()
-//    maven { url = uri("https://dl.bintray.com/karlatemp/misc") }
+    maven { url = uri("https://dl.bintray.com/karlatemp/misc") }
 }
+//
+//dependencies {
+//    runtimeOnly("net.mamoe:mirai-login-solver-selenium:1.0-dev-16")
+//}

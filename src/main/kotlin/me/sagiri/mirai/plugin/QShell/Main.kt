@@ -53,7 +53,7 @@ object Main : KotlinPlugin(
         messageEventListener = globalEventChannel().subscribeAlways<MessageEvent> { event ->
             QSConfig.shellList.forEach list@{ commandConfig ->
                 // 匹配正则表达式
-                val pattern = Pattern.compile(commandConfig.commandRegex, Pattern.DOTALL).matcher(message.serializeToMiraiCode())
+                val pattern = Pattern.compile(commandConfig.commandRegex, Pattern.DOTALL).matcher(message.content)
                 if (pattern.find()) {
                     // 这个shell是否是启用状态
                     if (commandConfig.isEnabled) {
@@ -70,7 +70,10 @@ object Main : KotlinPlugin(
                                     if (groupIndex <= groupCount || groupIndex > 0) {
                                         var groupContent = pattern.group(groupIndex)
                                         commandConfig.replace.forEach { it ->
-                                            groupContent = groupContent.replace(it[0], it[1])
+                                            val t = it.split(";;")
+                                            if(t.size > 1) {
+                                                groupContent = groupContent.replace(t[0], t[1])
+                                            }
                                         }
                                         tempCommandConfig[index] =
                                             tempCommandConfig[index].replace("\$${groupIndex}", groupContent)
@@ -85,7 +88,33 @@ object Main : KotlinPlugin(
                                     tempCommandConfig[index].replace("\$time", event.time.toString())
                             }
 
-                            val shell: Shell = Shell()
+                            val shell = Shell()
+                            /**
+                             * 设置变量环境
+                             */
+                            shell.environment["MASTER"] = QSConfig.master.toString()
+
+                            shell.environment["BOTID"] = bot.id.toString()
+                            shell.environment["BOTNAME"] = bot.nick
+                            shell.environment["BOTFRIENDSSIZE"] = bot.friends.size.toString()
+                            shell.environment["BOTGROUPSSIZE"] = bot.groups.size.toString()
+                            shell.environment["BOTAVATARURL"] = bot.avatarUrl
+
+                            shell.environment["MESSAGECONTENT"] = message.content
+                            shell.environment["MESSAGEMIRAI"] = message.serializeToMiraiCode()
+                            shell.environment["MESSAGELENGTH"] = message.content.length.toString()
+
+                            shell.environment["SUBJECTNAME"] = subject.javaClass.name
+                            shell.environment["SENDERID"] = sender.id.toString()
+                            shell.environment["SENDERNAME"] = sender.nick
+                            shell.environment["SENDERAGE"] = sender.queryProfile().age.toString()
+                            shell.environment["SENDEREMAIL"] = sender.queryProfile().email
+                            shell.environment["SENDERLEVEL"] = sender.queryProfile().qLevel.toString()
+                            shell.environment["SENDERSEX"] = sender.queryProfile().sex.name
+                            shell.environment["SENDERSIGN"] = sender.queryProfile().sign
+
+
+
                             val l = GlobalScope.launch {
                                 val msg = shell.exec(tempCommandConfig)
                                 if (msg != null) {

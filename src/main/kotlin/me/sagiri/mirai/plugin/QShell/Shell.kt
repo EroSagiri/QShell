@@ -10,10 +10,11 @@ class Shell {
     private lateinit var pb : ProcessBuilder
     private lateinit var ps : Process
     private var pid by Delegates.notNull<Long>()
+    lateinit var environment: MutableMap<String, String>
 
     init {
         pb = ProcessBuilder()
-//        pb.directory(File(System.getenv("HOME")))
+        environment = pb.environment()
     }
 
     fun exec(cmd : String): String? {
