@@ -50,6 +50,6 @@ jobs:
       - name: artifact
         uses: actions/upload-artifact@v2
         with:
-          name: Qshell
+          name: Qshell.jar
           path: ${{ github.workspace }}/build/mirai/*.jar
             
