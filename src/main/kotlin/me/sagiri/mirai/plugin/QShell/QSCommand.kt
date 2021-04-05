@@ -1,5 +1,6 @@
 package me.sagiri.mirai.plugin.QShell
 
+import me.sagiri.mirai.plugin.QShell.QSCommand.enable
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.plugin.jvm.reloadPluginConfig
@@ -162,7 +163,7 @@ object QSCommand : CompositeCommand(
     }
 
     @SubCommand("black")
-    @Description("添加用户到信任列表")
+    @Description("添加用户到balck列表")
     suspend fun CommandSender.black(shellName: String, role: String) {
         var isAdd = false
         QSConfig.shellList.forEach { commandConfig ->
@@ -185,7 +186,7 @@ object QSCommand : CompositeCommand(
     }
 
     @SubCommand("blackClear")
-    @Description("添加用户到信任列表")
+    @Description("清除black列表")
     suspend fun CommandSender.blackClear(shellName: String, role: String) {
         var isAdd = false
         QSConfig.shellList.forEach { commandConfig ->
@@ -232,6 +233,7 @@ object QSCommand : CompositeCommand(
                 if (!commandConfig.isEnabled) {
                     sendMessage("${shellName}关闭状态  ${commandConfig.description}")
                 } else {
+                    commandConfig.isEnabled = false
                     sendMessage("已关闭${shellName} ${commandConfig.description}")
                 }
             }
@@ -244,7 +246,7 @@ object QSCommand : CompositeCommand(
 
     @SubCommand("add")
     @Description("添加一个shell")
-    suspend fun CommandSender.remove(shellName: String, commandRegex: String) {
+    suspend fun CommandSender.remove(shellName: String, commandRegex: String, notPresentMessage : String = "") {
         var is_in = false
         QSConfig.shellList.forEach { commandConfig ->
             if (commandConfig.name == shellName) {
@@ -265,7 +267,7 @@ object QSCommand : CompositeCommand(
                     mutableListOf(),
                     true,
                     "description",
-                    "没有执行${shellName}的权限",
+                    notPresentMessage,
                     "\$msg",
                     0L,
                 )
