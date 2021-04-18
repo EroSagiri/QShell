@@ -15,7 +15,6 @@ import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.utils.info
-import java.util.*
 import java.util.regex.Pattern
 
 object Main : KotlinPlugin(
@@ -111,8 +110,9 @@ object Main : KotlinPlugin(
                                 logger.info("${sender.id} ${sender.nick} 执行 ${commandConfig.name}")
                                 val msg = shell.exec(tempCommandConfig)
                                 if (msg != null) {
-                                    val t = commandConfig.message.replace("\$msg", msg).deserializeMiraiCode()
-                                    event.subject.sendMessage(t)
+                                    var t = commandConfig.message.replace("\$msg", msg)
+                                    t = UploadImage.push(event, t)
+                                    event.subject.sendMessage(t.deserializeMiraiCode())
                                 }
                             }
                             if (commandConfig.timeout != 0L) {
