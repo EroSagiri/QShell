@@ -1,13 +1,13 @@
 plugins {
-    val kotlinVersion = "1.4.31"
+    val kotlinVersion = "1.5.0"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
 
-    id("net.mamoe.mirai-console") version "2.4.1"
+    id("net.mamoe.mirai-console") version "2.6.4"
 }
 
 group = "me.sagiri.mirai.plugin.QShell"
-version = "0.1.1"
+version = "0.2.0"
 
 repositories {
     mavenLocal()
@@ -19,5 +19,5 @@ repositories {
 //
 dependencies {
 //    runtimeOnly("net.mamoe:mirai-login-solver-selenium:1.0-dev-16")
-      implementation(group="com.github.kevinsawicki", version="6.0", name = "http-request")
+    implementation(group = "com.github.kevinsawicki", version = "6.0", name = "http-request")
 }

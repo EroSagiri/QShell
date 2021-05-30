@@ -1,6 +1,5 @@
 package me.sagiri.mirai.plugin.QShell
 
-import okhttp3.internal.wait
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -17,44 +16,48 @@ class Shell {
         environment = pb.environment()
     }
 
-    fun exec(cmd : String): String? {
-        pb.command(cmd)
-        val ps = pb.start()
-        val stdlog = BufferedReader(InputStreamReader(ps.inputStream)).readText()
-        val stderr = BufferedReader(InputStreamReader(ps.errorStream)).readText()
+//    fun exec(cmd : String): ShellReturn {
+//        pb.command(cmd)
+//
+//        val ps = pb.start()
+//
+//        val stdout = BufferedReader(InputStreamReader(ps.inputStream)).readText()
+//        val stderr = BufferedReader(InputStreamReader(ps.errorStream)).readText()
+//
+//        return ShellReturn(stdout = stdout, stderr = stderr, error = null, errorCode = ShellErrorCode.ok)
+//    }
 
-        if (stdlog != "" ) {
-            return stdlog
-        } else if( stderr != "") {
-            return stderr
-        } else {
-            return null
-        }
-    }
-
-    fun exec(commandList : MutableList<String>): String? {
+    fun exec(commandList : MutableList<String>): ShellReturn {
         pb.command(commandList)
         ps = pb.start()
         pid = ps.pid()
         ps.waitFor()
 //        ps.destroyForcibly()
-        var stdlog = ""
-        var stderr = ""
-        try {
+        var stdout : String?
+        var stderr : String?
+        var errorCode : ShellErrorCode
+        var error : String?
 
-            stdlog = BufferedReader(InputStreamReader(ps.inputStream)).readText()
+        try {
+            stdout = BufferedReader(InputStreamReader(ps.inputStream)).readText()
+        } catch (e : IOException) {
+            stdout = null
+            error = "stdout stream closed"
+            errorCode = ShellErrorCode.stdoutStreamClosed
+        }
+
+        try {
             stderr = BufferedReader(InputStreamReader(ps.errorStream)).readText()
         } catch (e : IOException) {
-
+            stderr = null
+            error = "stderr strem closed"
+            errorCode = ShellErrorCode.stderrStreamClosed
         }
 
-        if (stdlog != "" ) {
-            return stdlog
-        } else if( stderr != "") {
-            return stderr
-        } else {
-            return null
-        }
+        return ShellReturn(
+            stdout = stdout,
+            stderr = stderr
+        )
     }
 
     fun destroy() : Boolean {
@@ -73,4 +76,23 @@ class Shell {
     fun getPid(): Long? {
         return pid
     }
+}
+
+/***
+ * shell 返回数据类
+ */
+data class ShellReturn(
+    val stdout : String?,
+    val stderr : String?,
+    val error : String? = null,
+    val errorCode : ShellErrorCode = ShellErrorCode.ok
+)
+
+/**
+ * 错误枚举类型
+ */
+enum class ShellErrorCode {
+    ok,
+    stdoutStreamClosed,
+    stderrStreamClosed
 }

@@ -1,11 +1,25 @@
-# mirai-QShell
+# mirai-QShell## 指令
+/qs help 获取帮助  
+/qs list 获取shell列表  
+/qs info 获取shell详细信息  
+/qs echo 回复指定消息  
+/qs trust 添加用户到指定信任列表  
+/qs deny 从信任列表移除用户  
+/qs denyAll 清楚指定的shell所有信任列表  
+/qs enable 开启一个shell  
+/qs disable 关闭一个shell  
+/qs add 添加一个shell  
+/qs set 设置shell的指定值  
+/qs cmd 编辑命令行  
+/qs reload 重新加载配置  
+
 在qq代理执行系统Shell命令
 每次执行一条命令都会启动一个进程（不会保留变量环境  
 不能执行堵塞的命令  
 
 ## 如何使用
 从Releases下载jar文件放到mirai-console的plugins  
-关于如何安装mirai-console看这里[mirai-native](https://github.com/iTXTech/mirai-native)
+关于如何安装mirai-console看这里[Mirai - UserManual](https://github.com/mamoe/mirai/blob/dev/docs/UserManual.md)
 启动mcl会在config/QShell/生成配置文件
 
 ## 配置文件
@@ -69,7 +83,7 @@ docker container run -d -it --rm --name=bash archlinux /bin/bash
       - $1
 ```
 
-但有人发送你好的时候回复你好呀  
+当有人发送你好的时候回复你好呀  
 ```
   - name: shell
     commandRegex: '你好'

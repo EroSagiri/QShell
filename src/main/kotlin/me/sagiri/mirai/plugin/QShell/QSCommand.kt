@@ -343,7 +343,10 @@ object QSCommand : CompositeCommand(
                         commandConfig.commandList.add(v)
                     }
                     "remove", "移除" -> {
-                        commandConfig.commandList.remove(commandConfig)
+                        commandConfig.commandList.remove(v)
+                    }
+                    "removeAt", "移除通过索引" -> {
+                        commandConfig.commandList.removeAt(v.toInt())
                     }
                     "clear", "清空" -> {
                         commandConfig.commandList.clear()
@@ -352,7 +355,7 @@ object QSCommand : CompositeCommand(
                         commandConfig.commandList.removeLast()
                     }
                     else -> {
-                        sendMessage("add 添加\nremove移除指定值\nclear清除所有\n删除最后一个")
+                        sendMessage("add 添加\nremove移除指定值\nremoveAt 移除通过索引\nclear清除所有\n删除最后一个")
                     }
                 }
             }

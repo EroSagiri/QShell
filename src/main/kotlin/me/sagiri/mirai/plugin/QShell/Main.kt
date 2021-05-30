@@ -21,7 +21,7 @@ object Main : KotlinPlugin(
     JvmPluginDescription(
         id = "me.sagiri.mirai.plugin.QShell",
         name = "QShell",
-        version = "0.1.0"
+        version = "0.2.0"
     ) {
         author("sagiri")
 
@@ -106,17 +106,29 @@ object Main : KotlinPlugin(
                             }
 
                             // 在这个协程执行shell
-                            val l = GlobalScope.launch {
+                            val l = launch {
                                 logger.info("${sender.id} ${sender.nick} 执行 ${commandConfig.name}")
-                                val msg = shell.exec(tempCommandConfig)
-                                if (msg != null) {
-                                    var t = commandConfig.message.replace("\$msg", msg)
-                                    t = UploadImage.push(event, t)
-                                    event.subject.sendMessage(t.deserializeMiraiCode())
+                                val data = shell.exec(tempCommandConfig)
+
+                                if(data.errorCode == ShellErrorCode.ok) {
+                                    if(data.stdout != null && data.stdout.isNotEmpty()) {
+                                        var t = commandConfig.message.replace("\$msg", data.stdout)
+                                        t = UploadImage.push(event, t)
+                                        event.subject.sendMessage(t.deserializeMiraiCode())
+                                    }
+
+                                    if(data.stderr != null && data.stderr.isNotEmpty()) {
+                                        var t = commandConfig.message.replace("\$msg", data.stderr)
+                                        t = UploadImage.push(event, t)
+                                        event.subject.sendMessage(t.deserializeMiraiCode())
+                                    }
+                                } else {
+                                    data.error?.let { event.subject.sendMessage(it) }
                                 }
                             }
+
                             if (commandConfig.timeout != 0L) {
-                                GlobalScope.launch {
+                                launch {
                                     delay(commandConfig.timeout)
                                     if (l.isActive) {
                                         shell.destroy()
