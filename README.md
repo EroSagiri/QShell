@@ -9,73 +9,174 @@
 
 ## 配置文件
 master 主人的qq,主人有执行所有命令的权限  
-shellList 是一个列表，每一条代表着一个shell解析器  
-shell解析器  
-  name shell解析器的名字  
-  commandRegex 匹配命令的正则表达式  
-  commandList 这是一个运行命令的列表，第一个要是可执行的程序，后面的是传递参数，$x会被替换成匹配到的分组 
-  trustList 能执行这个shell的用户，当这个列表里存在用户0时，所有人都有权限执行  
-  isEnabled true时该shell是启用的,false时该shell是关闭的  
-  description 这个shell的描述  
-  notPresentMessage 匹配到命令但是没有权限时返回的消息  
-
-### 运行bash的配置  
+shellList 是一个列表，每一条代表着一个shell配置  
+通常使用 /qs add (shellNmae) (regex) [notPresenMessage] 生成配置
 ```
+/**
+ * 命令解析器配置
+ * @param name 名字
+ * @param commandList 命令行，第一个是可执行程序，后面的是参数
+ * @param commandRegex 匹配qq消息的正则表达式 第X个分组会替换命令行的$X,X是正整数
+ * @param replace 执行前替换执行的命令的 是一个字符串 左边是替换的字符串用;隔开右是替换的字符串
+ * @param trustList 能执行命令的用户 * 代表所有人， u[qq]代表qq用户， f[qq]代表qq好友， g[q群号码]qq群
+ * @param blackList 黑名单
+ * @param isEnabled 是否启用
+ * @param description 说明
+ * @param notPresentMessage 没有权限的提示,这个字符串长度小于1时不提示
+ * @param message  里面的 $msg 会被替换从标准（错误）输出
+ * @param timeout 超时时间
+ */
+@Serializable
+data class ShellConfig(
+    var name : String,
+    var commandRegex : String,
+    var replace : MutableList<String>,
+    val commandList: MutableList<String>,
+    val trustList : MutableList<String>,
+    val blackList : MutableList<String>,
+    var isEnabled : Boolean,
+    var description : String,
+    var notPresentMessage : String,
+    var message : String,
+    var timeout : Long
+    )
+```
+
+## Master 在QQ执行QShell指令
+QShell每次启动都会把Master添加到权限系统  
+配合 [chat-command](https://github.com/project-mirai/chat-command) 
+Master 可以在qq上执行Qshell命令  
+![.github/images/command.png](.github/images/command.png)
+
+## 配置
+### 默认的配置
+只在Linux有效
+```
+# 主人qq号
 master: 2476255563
+# shell列表
 shellList: 
   - name: shell
     commandRegex: '^\$(.+)'
+    replace: []
     commandList: 
       - bash
       - '-c'
       - '$1'
+    trustList: []
+    blackList: []
+    isEnabled: true
+    description: 执行Shell命令
+    notPresentMessage: 没有执行Shell的权限
+    message: '$msg'
+    timeout: 0
 ```
 
-### 运行python的配置
+
+### Windows Cmd
 ```
-  - name: python
-    commandRegex: '^#python(.+)'
+# 主人qq号
+master: 2476255563
+# shell列表
+shellList: 
+  - name: shell
+    commandRegex: '^\$(.+)'
+    replace: []
     commandList: 
-      - python
-      - '-c'
+      - cmd
+      - '/c'
       - '$1'
+    trustList: []
+    blackList: []
+    isEnabled: true
+    description: 执行Shell命令
+    notPresentMessage: 没有执行Cmd的权限
+    message: '$msg'
+    timeout: 0
+```
+
+### Windows PowerShell
+```
+# 主人qq号
+master: 2476255563
+# shell列表
+shellList: 
+  - name: shell
+    commandRegex: '^\$(.+)'
+    replace: []
+    commandList: 
+      - powershell
+      - '-Command'
+      - '$1'
+    trustList: []
+    blackList: []
+    isEnabled: true
+    description: 执行Shell命令
+    notPresentMessage: 没有执行PowerShell的权限
+    message: '$msg'
+    timeout: 0
+```
+
+### Python
+```
+# 主人qq号
+master: 2476255563
+# shell列表
+shellList: 
+  - name: shell
+    commandRegex: '^\$(.+)'
+    replace: []
+    commandList: 
+      - powershell
+      - '-Command'
+      - '$1'
+    trustList: []
+    blackList: []
+    isEnabled: true
+    description: 执行Shell命令
+    notPresentMessage: 没有执行Python的权限
+    message: '$msg'
+    timeout: 0
 ```
 
 ### 在容器中运行bash
-确保当前有权限执行docker命令  
+确保当前有权限执行docker命令
+并且容器shell在运行  
 运行一个容器,守护进程方式，并且执行bash,不让ta退出  
-docker container run -d -it --rm --name=bash archlinux /bin/bash  
+docker container run -d -it --rm --name=shell archlinux /bin/bash  
 不要用bash去执行docker（很容易被提权,直接使用docker  
+
 ```
+# 主人qq号
+master: 2476255563
+# shell列表
+shellList: 
   - name: shell
     commandRegex: '^\$(.+)'
+    replace: []
     commandList: 
       - docker
       - exec
-      - f4e54ee3a981
+      - shell
       - bash
       - '-c'
       - '$1'
+    trustList: []
+    blackList: []
+    isEnabled: true
+    description: 执行Shell命令
+    notPresentMessage: 没有执行Shell的权限
+    message: '$msg'
+    timeout: 0
 ```
 
-### 奇怪的配置
-复读机  
-```
-  - name: echo
-    commandRegex: '(.)'
-    commandList: 
-      - echo
-      - $1
-```
-
-当有人发送你好的时候回复你好呀  
-```
-  - name: shell
-    commandRegex: '你好'
-    commandList: 
-      - echo
-      - '你好呀'
-```
+## 输出格式化
+标准（错误）输出有些特殊字符串会被格式化  
+### qshell image
+![](.github/images/qsehllImage.png)  
+### Mirai码
+阅读 [Mirai Core Api Document](https://docs.mirai.mamoe.net/Messages.html#%E8%BD%AC%E4%B9%89%E8%A7%84%E5%88%99)  
+![](.github/images/mirai.png)
 
 ## 指令
 /qs help 获取帮助  

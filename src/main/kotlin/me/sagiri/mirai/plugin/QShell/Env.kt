@@ -3,6 +3,9 @@ package me.sagiri.mirai.plugin.QShell
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.data.content
 
+/**
+ * 变量环境
+ */
 object Env {
     /**
      * 通过消息事件返回变量环境

@@ -8,8 +8,15 @@ import java.io.File
 import java.net.SocketTimeoutException
 import java.util.regex.Pattern
 
+
+/**
+ * 格式化图片
+ */
 class UploadImage {
     companion object {
+        /**
+         * 格式化 msg 里面的 [qshell:image:http?...] 替换成Mirar image
+         */
         suspend fun push(event: MessageEvent, msg: String): String {
             var newMsg = msg
             val m = Pattern.compile("\\[qshell:image:(http.+?)\\]").matcher(msg)
