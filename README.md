@@ -178,6 +178,34 @@ shellList:
 阅读 [Mirai Core Api Document](https://docs.mirai.mamoe.net/Messages.html#%E8%BD%AC%E4%B9%89%E8%A7%84%E5%88%99)  
 ![](.github/images/mirai.png)
 
+## 变量环境
+在执行程序之前qshell会添加一些环境变量  
+可以在shell下执行env 查看所有环境变量  
+### 配置相关
+MASTER 和配置文件的master一样  
+### 发送者相关
+SENDERNAME 发送者的qq昵称  
+SENDERID 发送者的qq号  
+SENDERSIGN 发送者的qq签名  
+SENDEREMAIL 发送者的电子邮箱  
+SENDERLEVEL 发送者等级 数字类型  
+SENDERAGE 发送者年龄  
+SENDERSEX 发送者性别  
+### 消息相关
+MESSAGECONTENT 消息内容  
+MESSAGEMIRAI 消息内容MiraiCode格式
+### 机器人相关
+BOTNAME 机器人的qq昵称  
+BOTAVATARURL 机器人头像的Url地址  
+BOTFRIENDSSIZE 机器人的好友数量  
+BOTGROUPSSIZE 机器人加入群的数量  
+### java相关
+JAVAVMNAME java虚拟机名字  
+JAVAVERSION java版本  
+### 操作系统相关
+OSARCH 操作系统架构  
+OSNAME 操作系统名字  
+
 ## 指令
 /qs help 获取帮助  
 /qs list 获取shell列表  
