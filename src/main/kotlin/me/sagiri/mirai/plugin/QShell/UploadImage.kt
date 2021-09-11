@@ -41,7 +41,7 @@ class UploadImage {
             req.trustAllHosts()
 
             req.connectTimeout(10000)
-            req.readTimeout(1000)
+            req.readTimeout(30000)
 
             var code = 0
 
