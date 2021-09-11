@@ -12,14 +12,7 @@ object QSCommand : CompositeCommand(
     Main, "qs",
     description = "qs"
 ) {
-    lateinit var help: String
-
-    init {
-        val helpFilePath = "help.txt"
-        val helpFile = javaClass.classLoader.getResource(helpFilePath)
-        help = helpFile.readText()
-
-    }
+    lateinit var help: String = "helo..."
 
     @SubCommand("help")
     @Description("获取帮助")
