@@ -12,7 +12,7 @@ object QSCommand : CompositeCommand(
     Main, "qs",
     description = "qs"
 ) {
-    lateinit var help: String = "helo..."
+    val help = "helo..."
 
     @SubCommand("help")
     @Description("获取帮助")
