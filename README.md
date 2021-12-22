@@ -127,8 +127,8 @@ shellList:
     commandRegex: '^\$(.+)'
     replace: []
     commandList: 
-      - powershell
-      - '-Command'
+      - python
+      - '-c'
       - '$1'
     trustList: []
     blackList: []
