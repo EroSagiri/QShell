@@ -106,7 +106,7 @@ object Main : KotlinPlugin(
                             }
 
                             // 在这个协程执行shell
-                            val l = launch {
+                            val job = QShellScope.launch {
                                 logger.info("${sender.id} ${sender.nick} 执行 ${commandConfig.name}")
                                 val data = shell.exec(tempCommandConfig)
 
@@ -130,7 +130,7 @@ object Main : KotlinPlugin(
                             if (commandConfig.timeout != 0L) {
                                 launch {
                                     delay(commandConfig.timeout)
-                                    if (l.isActive) {
+                                    if (job.isActive) {
                                         shell.destroy()
                                         event.subject.sendMessage(PlainText("超时被摧毁 Pid: ${shell.getPid()}").plus(event.message.quote()))
                                     }
