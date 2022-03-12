@@ -1,6 +1,5 @@
 package me.sagiri.mirai.plugin.QShell
 
-import com.github.kevinsawicki.http.HttpRequest
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
@@ -8,15 +7,13 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.data.Image
 import java.io.File
-import java.net.SocketTimeoutException
-import java.net.URI
+import java.util.*
 import java.util.regex.Pattern
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -76,6 +73,11 @@ class UploadImage {
          * 通过http协议获取图片然后上传
          */
         private suspend fun uploadImage(event: MessageEvent, url: String): Image? {
+            var format = "png"
+            val matcher = Pattern.compile("\\.(\\w+?)$").matcher(url)
+            if(matcher.find()) {
+                format = matcher.group(1)
+            }
             val response = client.get<HttpResponse>(url) {
                 onDownload { bytesSentTotal, contentLength ->
                     Main.logger.info("${bytesSentTotal} / ${contentLength}")
@@ -84,9 +86,10 @@ class UploadImage {
             if(response.status == HttpStatusCode.OK) {
                 val dir = File(System.getProperty("user.dir") + "/data/QShell/download")
                 if (!dir.exists()) dir.mkdirs()
-                val file = File("$dir/tmp.png")
+                val uuid = UUID.randomUUID()
+                val file = File("$dir/${uuid}.${format}")
                 file.writeBytes(response.readBytes())
-                return event.sender.uploadImage(file, formatName = "png")
+                return event.sender.uploadImage(file)
             } else {
                 return null
             }

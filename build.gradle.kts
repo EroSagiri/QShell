@@ -19,5 +19,4 @@ repositories {
 //
 dependencies {
 //    runtimeOnly("net.mamoe:mirai-login-solver-selenium:1.0-dev-16")
-    implementation(group = "com.github.kevinsawicki", version = "6.0", name = "http-request")
 }
