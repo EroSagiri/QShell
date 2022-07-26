@@ -13,7 +13,7 @@ suspend fun main() {
     Main.load()
     Main.enable()
 
-    val bot = MiraiConsole.addBot(3634848254, "loveIzumi233!") {
+    val bot = MiraiConsole.addBot(System.getenv("QQ").toLong(), System.getenv("PASSWORD")) {
         fileBasedDeviceInfo()
     }.alsoLogin()
 

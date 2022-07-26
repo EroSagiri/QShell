@@ -7,13 +7,13 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.data.Image
 import java.io.File
-import java.util.*
+import java.math.BigInteger
+import java.security.MessageDigest
 import java.util.regex.Pattern
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -45,7 +45,6 @@ class UploadImage {
             val fileImageJob = QShellScope.launch {
                 val matcher = Pattern.compile("\\[qshell:image:file://(.+?)\\]").matcher(msg)
                 while (matcher.find()) {
-//                val job = QShellScope.launch {
                     val filePath = matcher.group(1)
                     val imageFile = File(filePath)
                     if (imageFile.exists()) {
@@ -53,13 +52,6 @@ class UploadImage {
                         newMsg = newMsg.replace(matcher.group(), "[mirai:image:${image.imageId}]")
                     }
                 }
-            }
-//                jobs.add(job)
-//            }
-
-            val jobs = mutableListOf<Job>()
-            jobs.map { job ->
-                job.join()
             }
 
             fileImageJob.join()
@@ -71,6 +63,9 @@ class UploadImage {
 
         /**
          * 通过http协议获取图片然后上传
+         * @param event 消息事件
+         * @param 图片url地址
+         * @return mirai图片消息
          */
         private suspend fun uploadImage(event: MessageEvent, url: String): Image? {
             var format = "png"
@@ -84,46 +79,21 @@ class UploadImage {
                 }
             }
             if(response.status == HttpStatusCode.OK) {
-                val dir = File(System.getProperty("user.dir") + "/data/QShell/download")
+                val dir = File(System.getProperty("user.dir") + "/data/me.sagiri.mirai.plugin.QShell/download/")
                 if (!dir.exists()) dir.mkdirs()
-                val uuid = UUID.randomUUID()
-                val file = File("$dir/${uuid}.${format}")
-                file.writeBytes(response.readBytes())
+
+                val imageBytes = response.readBytes()
+
+                val crypt = MessageDigest.getInstance("MD5")
+                crypt.update(imageBytes)
+                val md5Sum = BigInteger(1, crypt.digest()).toString(16)
+
+                val file = File("$dir/${md5Sum}.${format}")
+                file.writeBytes(imageBytes)
                 return event.sender.uploadImage(file)
             } else {
                 return null
             }
-
-            /**
-            val req = HttpRequest.get(url)
-
-            req.trustAllCerts()
-            req.trustAllHosts()
-
-            req.connectTimeout(10000)
-            req.readTimeout(30000)
-
-            var code = 0
-
-            try {
-                code = req.code()
-            } catch (e: SocketTimeoutException) {
-
-                return null
-            }
-
-            if (code == 200) {
-                val dir = File(System.getProperty("user.dir") + "/data/QShell/download")
-                if (!dir.exists()) dir.mkdirs()
-                val file = File("$dir/tmp.png")
-                req.receive(file)
-                return event.sender.uploadImage(file, formatName = "png")
-            } else {
-
-                return null
-            }
-
-            */
         }
     }
 }
