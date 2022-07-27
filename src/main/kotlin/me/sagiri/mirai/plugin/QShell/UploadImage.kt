@@ -37,7 +37,7 @@ class UploadImage {
                     val url = m.group(1)
                     val image = uploadImage(event, url)
                     if (image != null) {
-                        newMsg = newMsg.replace(m.group(), "[mirai:image:${image.imageId}]")
+                        newMsg = newMsg.replace(m.group(), image.imageId)
                     }
                 }
             }
@@ -49,7 +49,7 @@ class UploadImage {
                     val imageFile = File(filePath)
                     if (imageFile.exists()) {
                         val image = event.sender.uploadImage(imageFile)
-                        newMsg = newMsg.replace(matcher.group(), "[mirai:image:${image.imageId}]")
+                        newMsg = newMsg.replace(matcher.group(), image.imageId)
                     }
                 }
             }
@@ -64,7 +64,7 @@ class UploadImage {
         /**
          * 通过http协议获取图片然后上传
          * @param event 消息事件
-         * @param 图片url地址
+         * @param url 图片url地址
          * @return mirai图片消息
          */
         private suspend fun uploadImage(event: MessageEvent, url: String): Image? {
