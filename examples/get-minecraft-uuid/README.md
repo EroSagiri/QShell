@@ -35,4 +35,4 @@ chmod +x uuid.py
 ```
 
 ## 效果
-![QWQ](C:\Users\i\IdeaProjects\QShell\examples\get-minecraft-uuid\test.png "QWQ")
+![QWQ](test.png "QWQ")
